@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELOCE MOTORS — The Future of Driving</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e8000d;
+    --gold: #f0b429;
+    --dark: #050508;
+    --dark2: #0d0d14;
+    --dark3: #111118;
+    --glass: rgba(255,255,255,0.04);
+    --glass2: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.08);
+    --text: #e0e0e8;
+    --muted: #7a7a9a;
+    --white: #ffffff;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ─── CURSOR ─── */
+  .cursor-dot {
+    width:8px; height:8px;
+    background:var(--red);
+    border-radius:50%;
+    position:fixed;
+    left:-50px; top:-50px;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    z-index:99999;
+  }
+  .cursor-ring {
+    width:36px; height:36px;
+    border:2px solid rgba(232,0,13,.5);
+    border-radius:50%;
+    position:fixed;
+    left:-50px; top:-50px;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    z-index:99998;
+  }
+
+  /* ─── LOADER ─── */
+  #loader {
+    position:fixed; inset:0; z-index:99999;
+    background:var(--dark);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition: opacity .8s ease, visibility .8s ease;
+  }
+  #loader.hide { opacity:0; visibility:hidden; }
+  .loader-logo {
+    font-family:'Orbitron',sans-serif;
+    font-size:3rem; font-weight:900;
+    color:var(--white);
+    letter-spacing:.3em;
+    animation: pulse 1s ease-in-out infinite alternate;
+  }
+  .loader-logo span { color:var(--red); }
+  .loader-bar {
+    width:300px; height:3px;
+    background:rgba(255,255,255,.1);
+    border-radius:2px; margin-top:2rem; overflow:hidden;
+  }
+  .loader-fill {
+    height:100%; width:0;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    border-radius:2px;
+    animation: loadfill 2s ease forwards;
+  }
+  .loader-pct {
+    font-family:'Orbitron',sans-serif;
+    font-size:.9rem; margin-top:1rem;
+    color:var(--muted); letter-spacing:.2em;
+  }
+  @keyframes loadfill { to { width:100%; } }
+  @keyframes pulse { from{opacity:.6} to{opacity:1} }
+
+  /* ─── PARTICLES ─── */
+  #particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+  /* ─── NAV ─── */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:1000;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.2rem 4rem;
+    background:rgba(5,5,8,.85);
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+    transition: all .4s ease;
+  }
+  nav.scrolled { padding:.8rem 4rem; background:rgba(5,5,8,.98); }
+  .nav-logo {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.5rem; font-weight:900;
+    color:var(--white); text-decoration:none; letter-spacing:.2em;
+  }
+  .nav-logo span { color:var(--red); }
+  .nav-links { display:flex; gap:2.5rem; list-style:none; }
+  .nav-links a {
+    color:var(--muted); text-decoration:none;
+    font-size:1rem; font-weight:600; letter-spacing:.1em;
+    text-transform:uppercase;
+    position:relative; transition:color .3s;
+  }
+  .nav-links a::after {
+    content:''; position:absolute; bottom:-4px; left:0;
+    width:0; height:2px; background:var(--red);
+    transition:width .3s ease;
+  }
+  .nav-links a:hover { color:var(--white); }
+  .nav-links a:hover::after { width:100%; }
+  .nav-cta {
+    background:var(--red); color:var(--white);
+    padding:.6rem 1.8rem; border:none; border-radius:2px;
+    font-family:'Orbitron',sans-serif; font-size:.75rem;
+    font-weight:700; letter-spacing:.15em; cursor:pointer;
+    text-transform:uppercase;
+    position:relative; overflow:hidden; transition:all .3s;
+  }
+  .nav-cta::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.2) 50%,transparent 70%);
+    transform:translateX(-100%); transition:transform .4s;
+  }
+  .nav-cta:hover::before { transform:translateX(100%); }
+  .nav-cta:hover { transform:scale(1.05); box-shadow:0 0 30px rgba(232,0,13,.4); }
+
+  /* ─── HERO ─── */
+  #hero {
+    position:relative; height:100vh; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero-bg {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 50%, rgba(232,0,13,.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 80% 60%, rgba(240,180,41,.05) 0%, transparent 60%),
+      linear-gradient(135deg, #050508 0%, #0d0d14 50%, #050508 100%);
+  }
+  .hero-grid {
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size:60px 60px;
+    animation:gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    from { transform:translateY(0); }
+    to   { transform:translateY(60px); }
+  }
+
+  .hero-content {
+    position:relative; z-index:2; text-align:center; padding:0 2rem;
+  }
+  .hero-eyebrow {
+    font-family:'Orbitron',sans-serif;
+    font-size:.75rem; letter-spacing:.5em;
+    color:var(--red); text-transform:uppercase;
+    margin-bottom:1.5rem;
+    animation:fadeUp .8s ease both .3s;
+  }
+  .hero-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(3rem,8vw,7rem);
+    font-weight:900; line-height:1;
+    color:var(--white);
+    text-transform:uppercase; letter-spacing:.05em;
+    animation:fadeUp .8s ease both .5s;
+  }
+  .hero-title .line2 { color:transparent; -webkit-text-stroke:1px rgba(255,255,255,.3); }
+  .hero-title .accent { color:var(--red); }
+  .hero-sub {
+    font-size:1.3rem; color:var(--muted);
+    margin:1.5rem auto 3rem; max-width:600px;
+    font-weight:300; letter-spacing:.05em;
+    animation:fadeUp .8s ease both .7s;
+  }
+  .hero-btns {
+    display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap;
+    animation:fadeUp .8s ease both .9s;
+  }
+  .btn-primary {
+    background:var(--red); color:var(--white);
+    padding:1rem 3rem; border:none; border-radius:2px;
+    font-family:'Orbitron',sans-serif; font-size:.8rem;
+    font-weight:700; letter-spacing:.2em; cursor:pointer;
+    text-transform:uppercase; text-decoration:none;
+    display:inline-block;
+    position:relative; overflow:hidden;
+    transition:all .3s;
+  }
+  .btn-primary:hover { transform:translateY(-3px); box-shadow:0 20px 40px rgba(232,0,13,.4); }
+  .btn-outline {
+    background:transparent; color:var(--white);
+    padding:1rem 3rem; border:1px solid rgba(255,255,255,.3); border-radius:2px;
+    font-family:'Orbitron',sans-serif; font-size:.8rem;
+    font-weight:700; letter-spacing:.2em; cursor:pointer;
+    text-transform:uppercase; text-decoration:none;
+    display:inline-block;
+    transition:all .3s;
+  }
+  .btn-outline:hover { border-color:var(--white); transform:translateY(-3px); background:rgba(255,255,255,.05); }
+
+  .hero-stats {
+    position:absolute; bottom:3rem; left:0; right:0;
+    display:flex; justify-content:center; gap:4rem; z-index:2;
+    animation:fadeUp .8s ease both 1.1s;
+  }
+  .stat { text-align:center; }
+  .stat-num {
+    font-family:'Orbitron',sans-serif;
+    font-size:2.5rem; font-weight:900; color:var(--white);
+    line-height:1;
+  }
+  .stat-num span { color:var(--red); }
+  .stat-label {
+    font-size:.8rem; color:var(--muted);
+    letter-spacing:.2em; text-transform:uppercase; margin-top:.3rem;
+  }
+
+  /* ─── 3D SCENE ─── */
+  #scene3d {
+    position:relative; background:var(--dark2); overflow:hidden;
+    padding:6rem 0;
+  }
+  .scene-canvas-wrap {
+    width:100%; height:500px; position:relative;
+  }
+  #scene3d canvas { display:block; }
+  .scene-overlay {
+    position:absolute; top:50%; left:5%; transform:translateY(-50%);
+    z-index:10;
+  }
+  .scene-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(1.5rem,3vw,2.5rem);
+    font-weight:900; color:var(--white);
+    text-transform:uppercase; line-height:1.1;
+  }
+  .scene-title span { color:var(--red); }
+  .scene-desc { color:var(--muted); margin-top:1rem; max-width:320px; line-height:1.6; font-size:1.05rem; }
+
+  /* ─── SECTION SHARED ─── */
+  section { position:relative; z-index:1; }
+  .section-header { text-align:center; margin-bottom:4rem; }
+  .section-eyebrow {
+    font-family:'Orbitron',sans-serif; font-size:.7rem;
+    letter-spacing:.5em; color:var(--red); text-transform:uppercase;
+    margin-bottom:1rem; display:block;
+  }
+  .section-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(2rem,4vw,3.5rem);
+    font-weight:900; color:var(--white);
+    text-transform:uppercase; letter-spacing:.05em;
+  }
+  .section-title span { color:var(--red); }
+  .section-sub { color:var(--muted); margin-top:1rem; font-size:1.1rem; }
+
+  /* ─── MARQUEE ─── */
+  .marquee-wrap {
+    overflow:hidden; background:var(--red);
+    padding:.8rem 0;
+  }
+  .marquee-track {
+    display:flex; gap:3rem; white-space:nowrap;
+    animation:marquee 20s linear infinite;
+  }
+  .marquee-item {
+    font-family:'Orbitron',sans-serif;
+    font-size:.7rem; font-weight:700;
+    color:var(--white); letter-spacing:.3em;
+    text-transform:uppercase; flex-shrink:0;
+  }
+  .marquee-dot { color:rgba(255,255,255,.4); margin:0 1rem; }
+  @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* ─── FILTERS ─── */
+  .filter-bar {
+    display:flex; gap:1rem; justify-content:center;
+    flex-wrap:wrap; margin-bottom:3rem;
+  }
+  .filter-btn {
+    background:var(--glass); border:1px solid var(--border);
+    color:var(--muted); padding:.5rem 1.5rem; border-radius:2px;
+    font-family:'Rajdhani',sans-serif; font-size:.9rem;
+    font-weight:600; letter-spacing:.1em; cursor:pointer;
+    text-transform:uppercase; transition:all .3s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background:var(--red); border-color:var(--red); color:var(--white);
+  }
+
+  /* ─── CARS GRID ─── */
+  #cars { padding:6rem 2rem; background:var(--dark); }
+  .cars-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(340px,1fr));
+    gap:2rem; max-width:1400px; margin:0 auto;
+  }
+  .car-card {
+    background:var(--dark3);
+    border:1px solid var(--border);
+    border-radius:4px; overflow:hidden;
+    position:relative; cursor:pointer;
+    transition:all .4s cubic-bezier(.23,1,.32,1);
+    animation:fadeUp .6s ease both;
+  }
+  .car-card:hover {
+    transform:translateY(-12px) scale(1.01);
+    border-color:rgba(232,0,13,.4);
+    box-shadow:0 30px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(232,0,13,.2), 0 0 40px rgba(232,0,13,.1);
+  }
+  .car-card::before {
+    content:''; position:absolute; top:0; left:0; right:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent, var(--red), transparent);
+    opacity:0; transition:opacity .4s;
+  }
+  .car-card:hover::before { opacity:1; }
+
+  .car-img-wrap {
+    position:relative; height:220px; overflow:hidden;
+    background:linear-gradient(135deg,#0a0a0f 0%,#111118 100%);
+  }
+  .car-img-wrap img {
+    width:100%; height:100%; object-fit:cover;
+    transition:transform .6s cubic-bezier(.23,1,.32,1);
+    filter:brightness(.95) contrast(1.05);
+  }
+  .car-card:hover .car-img-wrap img { transform:scale(1.08); }
+  .car-badge {
+    position:absolute; top:1rem; right:1rem;
+    background:var(--red); color:var(--white);
+    font-family:'Orbitron',sans-serif; font-size:.55rem;
+    font-weight:700; padding:.3rem .8rem; border-radius:1px;
+    letter-spacing:.15em; text-transform:uppercase;
+    animation:badgePulse 2s ease infinite;
+  }
+  @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,0,13,.6)} 50%{box-shadow:0 0 0 6px rgba(232,0,13,0)} }
+  .car-brand-logo {
+    position:absolute; top:1rem; left:1rem;
+    background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
+    border:1px solid var(--border);
+    padding:.3rem .8rem; border-radius:2px;
+    font-family:'Orbitron',sans-serif;
+    font-size:.6rem; font-weight:900;
+    color:var(--gold); letter-spacing:.2em;
+  }
+  .car-overlay {
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(5,5,8,.9) 0%, transparent 60%);
+  }
+
+  .car-body { padding:1.5rem; }
+  .car-model {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.1rem; font-weight:700;
+    color:var(--white); text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  .car-year-cat {
+    display:flex; gap:.8rem; margin-top:.3rem;
+    align-items:center;
+  }
+  .car-year {
+    font-size:.85rem; color:var(--muted); font-weight:600; letter-spacing:.05em;
+  }
+  .car-cat {
+    font-size:.7rem; color:var(--gold);
+    font-family:'Orbitron',sans-serif; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .car-specs {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:.5rem; margin-top:1.2rem; padding-top:1.2rem;
+    border-top:1px solid var(--border);
+  }
+  .spec { text-align:center; }
+  .spec-val {
+    font-family:'Orbitron',sans-serif;
+    font-size:1rem; font-weight:700; color:var(--white);
+  }
+  .spec-val span { color:var(--red); font-size:.7rem; }
+  .spec-label { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-top:.1rem; }
+
+  .car-price-row {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:1.2rem; padding-top:1.2rem;
+    border-top:1px solid var(--border);
+  }
+  .car-price {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.2rem; font-weight:900; color:var(--gold);
+  }
+  .car-price sub { font-size:.65rem; color:var(--muted); vertical-align:middle; margin-right:.2rem; }
+  .car-btn {
+    background:var(--red); color:var(--white);
+    border:none; padding:.5rem 1.2rem; border-radius:2px;
+    font-family:'Orbitron',sans-serif; font-size:.6rem;
+    font-weight:700; letter-spacing:.15em; cursor:pointer;
+    text-transform:uppercase;
+    transition:all .3s; position:relative; overflow:hidden;
+  }
+  .car-btn:hover { background:#ff1a25; box-shadow:0 8px 20px rgba(232,0,13,.4); transform:scale(1.05); }
+
+  .car-rating {
+    display:flex; gap:.2rem; margin-top:.8rem;
+  }
+  .star { color:var(--gold); font-size:.9rem; }
+  .star.empty { color:rgba(255,255,255,.15); }
+  .rating-count { font-size:.8rem; color:var(--muted); margin-left:.4rem; }
+
+  /* ─── FEATURES ─── */
+  #features { padding:6rem 2rem; background:var(--dark2); }
+  .features-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:1.5rem; max-width:1200px; margin:0 auto;
+  }
+  .feature-card {
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:4px; padding:2rem;
+    position:relative; overflow:hidden;
+    transition:all .4s ease;
+  }
+  .feature-card::after {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 0%, rgba(232,0,13,.05), transparent 70%);
+    opacity:0; transition:opacity .4s;
+  }
+  .feature-card:hover { border-color:rgba(232,0,13,.3); transform:translateY(-6px); }
+  .feature-card:hover::after { opacity:1; }
+  .feature-icon {
+    width:56px; height:56px;
+    background:linear-gradient(135deg, rgba(232,0,13,.15), rgba(240,180,41,.1));
+    border:1px solid rgba(232,0,13,.2);
+    border-radius:4px; display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem; margin-bottom:1.5rem;
+  }
+  .feature-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:1rem; font-weight:700; color:var(--white);
+    text-transform:uppercase; letter-spacing:.05em; margin-bottom:.8rem;
+  }
+  .feature-desc { color:var(--muted); font-size:.95rem; line-height:1.7; }
+
+  /* ─── HERO CAR SPOTLIGHT ─── */
+  #spotlight {
+    padding:6rem 2rem; background:var(--dark);
+    position:relative; overflow:hidden;
+  }
+  #spotlight::before {
+    content:''; position:absolute;
+    width:600px; height:600px;
+    background:radial-gradient(circle, rgba(232,0,13,.08), transparent 70%);
+    top:50%; left:20%; transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .spotlight-inner {
+    max-width:1200px; margin:0 auto;
+    display:grid; grid-template-columns:1fr 1fr; gap:6rem; align-items:center;
+  }
+  .spotlight-img-wrap {
+    position:relative;
+  }
+  .spotlight-img {
+    width:100%; border-radius:4px;
+    filter:drop-shadow(0 30px 60px rgba(232,0,13,.2));
+    animation:float 6s ease-in-out infinite;
+    transition:transform .3s;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+  .spotlight-glow {
+    position:absolute; bottom:-30px; left:50%; transform:translateX(-50%);
+    width:80%; height:60px;
+    background:radial-gradient(ellipse, rgba(232,0,13,.3), transparent 70%);
+    filter:blur(20px);
+  }
+  .spotlight-info {}
+  .spotlight-brand {
+    font-family:'Orbitron',sans-serif; font-size:.7rem;
+    letter-spacing:.4em; color:var(--gold); text-transform:uppercase;
+    margin-bottom:.8rem;
+  }
+  .spotlight-model {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(2rem,4vw,3.5rem); font-weight:900;
+    color:var(--white); line-height:1; text-transform:uppercase;
+  }
+  .spotlight-model em { color:var(--red); font-style:normal; }
+  .spotlight-tagline { color:var(--muted); font-size:1.1rem; margin:1.5rem 0; line-height:1.6; }
+  .spotlight-stats {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:2rem 0;
+  }
+  .sp-stat {
+    background:var(--glass); border:1px solid var(--border);
+    border-radius:4px; padding:1rem; text-align:center;
+    transition:all .3s;
+  }
+  .sp-stat:hover { border-color:rgba(232,0,13,.4); background:rgba(232,0,13,.05); }
+  .sp-num {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.5rem; font-weight:900; color:var(--white);
+  }
+  .sp-num span { color:var(--red); font-size:.9rem; }
+  .sp-lbl { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-top:.2rem; }
+
+  /* ─── BRANDS STRIP ─── */
+  #brands { padding:4rem 2rem; background:var(--dark2); }
+  .brands-grid {
+    display:flex; gap:2rem; justify-content:center;
+    flex-wrap:wrap; max-width:1000px; margin:0 auto;
+  }
+  .brand-pill {
+    background:var(--glass); border:1px solid var(--border);
+    border-radius:3px; padding:1rem 2rem;
+    font-family:'Orbitron',sans-serif; font-size:.75rem;
+    font-weight:700; color:var(--muted); letter-spacing:.2em;
+    text-transform:uppercase; cursor:pointer; transition:all .3s;
+  }
+  .brand-pill:hover {
+    color:var(--white); border-color:var(--red);
+    background:rgba(232,0,13,.08);
+    transform:scale(1.05);
+    box-shadow:0 0 20px rgba(232,0,13,.2);
+  }
+
+  /* ─── COMPARE ─── */
+  #compare { padding:6rem 2rem; background:var(--dark); }
+  .compare-table-wrap { max-width:900px; margin:0 auto; overflow-x:auto; }
+  .compare-table { width:100%; border-collapse:collapse; }
+  .compare-table th, .compare-table td {
+    padding:1rem 1.5rem;
+    border-bottom:1px solid var(--border);
+    text-align:left; font-family:'Rajdhani',sans-serif; font-size:1rem;
+  }
+  .compare-table th {
+    font-family:'Orbitron',sans-serif; font-size:.7rem;
+    color:var(--muted); text-transform:uppercase;
+    letter-spacing:.15em; background:var(--dark3);
+  }
+  .compare-table td { color:var(--text); }
+  .compare-table tr:hover td { background:var(--glass); }
+  .compare-table .highlight { color:var(--gold); font-weight:700; }
+  .compare-table .car-name { color:var(--white); font-weight:600; font-family:'Orbitron',sans-serif; font-size:.85rem; }
+  .perf-bar {
+    height:6px; background:rgba(255,255,255,.1); border-radius:3px; overflow:hidden; min-width:80px;
+  }
+  .perf-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--red),var(--gold)); }
+
+  /* ─── TESTIMONIALS ─── */
+  #reviews { padding:6rem 2rem; background:var(--dark2); }
+  .reviews-track {
+    display:flex; gap:1.5rem; max-width:1200px; margin:0 auto;
+    overflow-x:auto; padding-bottom:1rem; scroll-snap-type:x mandatory;
+  }
+  .reviews-track::-webkit-scrollbar { height:4px; }
+  .reviews-track::-webkit-scrollbar-track { background:var(--dark3); }
+  .reviews-track::-webkit-scrollbar-thumb { background:var(--red); border-radius:2px; }
+  .review-card {
+    flex:0 0 360px; background:var(--glass);
+    border:1px solid var(--border); border-radius:4px;
+    padding:2rem; scroll-snap-align:start;
+    transition:all .3s;
+  }
+  .review-card:hover { border-color:rgba(232,0,13,.3); transform:translateY(-4px); }
+  .review-stars { color:var(--gold); margin-bottom:1rem; letter-spacing:.2rem; }
+  .review-text { color:var(--text); font-size:1rem; line-height:1.7; font-style:italic; margin-bottom:1.5rem; }
+  .review-author { display:flex; align-items:center; gap:1rem; }
+  .review-avatar {
+    width:44px; height:44px; border-radius:50%;
+    background:linear-gradient(135deg,var(--red),var(--gold));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif; font-size:.9rem; font-weight:900; color:var(--white);
+  }
+  .review-name { font-weight:700; color:var(--white); font-size:1rem; }
+  .review-car { font-size:.8rem; color:var(--muted); margin-top:.2rem; }
+
+  /* ─── CTA BAND ─── */
+  #cta-band {
+    padding:6rem 2rem; text-align:center;
+    background:linear-gradient(135deg,var(--dark2) 0%,rgba(232,0,13,.08) 50%,var(--dark2) 100%);
+    border-top:1px solid rgba(232,0,13,.2); border-bottom:1px solid rgba(232,0,13,.2);
+    position:relative; overflow:hidden;
+  }
+  #cta-band::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse 70% 80% at 50% 50%, rgba(232,0,13,.06), transparent);
+  }
+  .cta-band-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(2rem,5vw,4rem); font-weight:900;
+    color:var(--white); text-transform:uppercase;
+    line-height:1.1; position:relative;
+  }
+  .cta-band-sub { color:var(--muted); font-size:1.2rem; margin:1.5rem 0 3rem; position:relative; }
+  .cta-form {
+    display:flex; gap:1rem; justify-content:center;
+    max-width:500px; margin:0 auto; position:relative; flex-wrap:wrap;
+  }
+  .cta-input {
+    flex:1; background:rgba(255,255,255,.06);
+    border:1px solid var(--border); border-radius:2px;
+    padding:.9rem 1.5rem; color:var(--white);
+    font-family:'Rajdhani',sans-serif; font-size:1rem;
+    outline:none; min-width:200px; transition:border-color .3s;
+  }
+  .cta-input::placeholder { color:var(--muted); }
+  .cta-input:focus { border-color:var(--red); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background:var(--dark); padding:4rem 2rem 2rem;
+    border-top:1px solid var(--border);
+  }
+  .footer-grid {
+    display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:3rem;
+    max-width:1200px; margin:0 auto; padding-bottom:3rem;
+    border-bottom:1px solid var(--border);
+  }
+  .footer-brand-name {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.5rem; font-weight:900; color:var(--white); letter-spacing:.2em;
+  }
+  .footer-brand-name span { color:var(--red); }
+  .footer-about { color:var(--muted); font-size:.95rem; line-height:1.7; margin-top:1rem; }
+  .footer-socials { display:flex; gap:1rem; margin-top:1.5rem; }
+  .social-btn {
+    width:36px; height:36px; border:1px solid var(--border);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); cursor:pointer; transition:all .3s; font-size:.9rem;
+    text-decoration:none;
+  }
+  .social-btn:hover { border-color:var(--red); color:var(--red); transform:scale(1.1); }
+  .footer-col h4 {
+    font-family:'Orbitron',sans-serif; font-size:.7rem;
+    letter-spacing:.2em; color:var(--white); text-transform:uppercase;
+    margin-bottom:1.2rem;
+  }
+  .footer-col ul { list-style:none; }
+  .footer-col li { margin-bottom:.7rem; }
+  .footer-col a { color:var(--muted); text-decoration:none; font-size:.95rem; transition:color .3s; }
+  .footer-col a:hover { color:var(--red); }
+  .footer-bottom {
+    max-width:1200px; margin:0 auto;
+    display:flex; justify-content:space-between; align-items:center;
+    padding-top:2rem; flex-wrap:wrap; gap:1rem;
+  }
+  .footer-copy { color:var(--muted); font-size:.85rem; }
+
+  /* ─── SCROLL REVEAL ─── */
+  .reveal { opacity:0; transform:translateY(40px); transition:all .8s cubic-bezier(.23,1,.32,1); }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(30px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position:fixed; inset:0; z-index:9000;
+    background:rgba(0,0,0,.9); backdrop-filter:blur(10px);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .4s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    background:var(--dark3); border:1px solid rgba(232,0,13,.3);
+    border-radius:6px; max-width:700px; width:90%; max-height:90vh;
+    overflow-y:auto; padding:2.5rem; position:relative;
+    transform:scale(.9); transition:transform .4s cubic-bezier(.23,1,.32,1);
+  }
+  .modal-overlay.open .modal { transform:scale(1); }
+  .modal-close {
+    position:absolute; top:1rem; right:1rem;
+    background:none; border:none; color:var(--muted); font-size:1.5rem;
+    cursor:pointer; transition:color .3s; line-height:1;
+  }
+  .modal-close:hover { color:var(--red); }
+  .modal-img { width:100%; border-radius:4px; margin-bottom:1.5rem; }
+  .modal-title {
+    font-family:'Orbitron',sans-serif; font-size:1.5rem; font-weight:900;
+    color:var(--white); text-transform:uppercase; margin-bottom:.5rem;
+  }
+  .modal-price { font-family:'Orbitron',sans-serif; font-size:1.8rem; font-weight:900; color:var(--gold); margin-bottom:1rem; }
+  .modal-specs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin:1.5rem 0; }
+  .modal-spec { background:var(--glass); border:1px solid var(--border); border-radius:3px; padding:1rem; text-align:center; }
+  .modal-spec-val { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:700; color:var(--white); }
+  .modal-spec-lbl { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-top:.2rem; }
+  .modal-desc { color:var(--muted); font-size:1rem; line-height:1.7; }
+  .modal-btn { margin-top:1.5rem; width:100%; padding:1rem; }
+
+  /* ─── SCROLL TO TOP ─── */
+  #scrollTop {
+    position:fixed; bottom:2rem; right:2rem; z-index:500;
+    width:48px; height:48px; background:var(--red);
+    border:none; border-radius:50%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--white); font-size:1.2rem;
+    opacity:0; transform:scale(0); transition:all .3s cubic-bezier(.23,1,.32,1);
+    box-shadow:0 4px 20px rgba(232,0,13,.4);
+  }
+  #scrollTop.visible { opacity:1; transform:scale(1); }
+  #scrollTop:hover { transform:scale(1.1); }
+
+  /* ─── PROGRESS BAR ─── */
+  #progress {
+    position:fixed; top:0; left:0; height:3px; z-index:9999;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    width:0%; transition:width .1s;
+  }
+
+  /* ─── FLOATING SPECS BADGE ─── */
+  .car-hover-specs {
+    position:absolute; bottom:0; left:0; right:0;
+    background:linear-gradient(to top, rgba(5,5,8,1) 0%, transparent 100%);
+    padding:1rem; display:flex; gap:1rem; justify-content:center;
+    transform:translateY(100%); transition:transform .4s cubic-bezier(.23,1,.32,1);
+    pointer-events:none;
+  }
+  .car-card:hover .car-hover-specs { transform:translateY(0); }
+  .hs-item { text-align:center; }
+  .hs-val { font-family:'Orbitron',sans-serif; font-size:.8rem; font-weight:700; color:var(--white); }
+  .hs-lbl { font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
+
+  /* ─── COUNTER ─── */
+  .count-up { transition:all .1s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width:768px) {
+    nav { padding:1rem 1.5rem; }
+    nav.scrolled { padding:.7rem 1.5rem; }
+    .nav-links { display:none; }
+    .hero-stats { gap:2rem; flex-wrap:wrap; }
+    .spotlight-inner { grid-template-columns:1fr; gap:3rem; }
+    .footer-grid { grid-template-columns:1fr 1fr; }
+    .modal-specs-grid { grid-template-columns:repeat(2,1fr); }
+    .compare-table th:not(:first-child):not(:nth-child(2)), 
+    .compare-table td:not(:first-child):not(:nth-child(2)) { display:none; }
+  }
+
+  /* ─── LIVE TICKER ─── */
+  .live-ticker {
+    background:rgba(0,0,0,.5); border:1px solid var(--border);
+    border-radius:3px; padding:.4rem 1rem; display:inline-flex; align-items:center; gap:.6rem;
+    margin-top:1rem;
+  }
+  .live-dot { width:8px; height:8px; border-radius:50%; background:#00ff88; animation:liveBlink 1.5s ease infinite; }
+  @keyframes liveBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+  .live-text { font-family:'Orbitron',sans-serif; font-size:.65rem; letter-spacing:.15em; color:var(--muted); }
+  .live-count { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; color:#00ff88; }
+
+  /* ─── AWARD BANNER ─── */
+  .award-strip {
+    display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;
+    padding:2rem; background:rgba(240,180,41,.04);
+    border-top:1px solid rgba(240,180,41,.1);
+    border-bottom:1px solid rgba(240,180,41,.1);
+  }
+  .award {
+    display:flex; align-items:center; gap:.8rem;
+    font-family:'Orbitron',sans-serif; font-size:.65rem;
+    font-weight:700; color:var(--gold); letter-spacing:.1em; text-transform:uppercase;
+  }
+  .award-icon { font-size:1.5rem; }
+</style>
+</head>
+<body>
+
+<!-- PROGRESS -->
+<div id="progress"></div>
+
+<!-- CURSOR -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">VELOC<span>E</span></div>
+  <div style="font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:.4em;color:var(--muted);margin-top:.5rem;">MOTORS</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-pct" id="loaderPct">0%</div>
+</div>
+
+<!-- PARTICLES -->
+<canvas id="particles"></canvas>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">VELOC<span>E</span></a>
+  <ul class="nav-links">
+    <li><a href="#cars">Models</a></li>
+    <li><a href="#spotlight">Spotlight</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#compare">Compare</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#brands">Brands</a></li>
+  </ul>
+  <button class="nav-cta">Book Test Drive</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ Premium Automotive Excellence ✦</div>
+    <h1 class="hero-title">
+      DRIVE THE<br>
+      <span class="line2">IMPOSSIBLE</span><br>
+      <span class="accent">DREAM.</span>
+    </h1>
+    <p class="hero-sub">Hand-curated collection of world's most extraordinary machines. From supercar to luxury — experience automotive perfection.</p>
+    <div class="live-ticker">
+      <div class="live-dot"></div>
+      <span class="live-text">LIVE INVENTORY</span>
+      <span class="live-count" id="liveCount">247</span>
+      <span class="live-text">CARS AVAILABLE</span>
+    </div>
+    <div class="hero-btns" style="margin-top:2rem;">
+      <a href="#cars" class="btn-primary">Explore Collection</a>
+      <a href="#spotlight" class="btn-outline">Feature Car</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num count-up" data-target="500">0</div><div class="stat-label">Cars in Stock</div></div>
+    <div class="stat"><div class="stat-num count-up" data-target="50">0</div><div class="stat-label">Premium Brands</div></div>
+    <div class="stat"><div class="stat-num count-up" data-target="12000">0</div><div class="stat-label">Happy Clients</div></div>
+    <div class="stat"><div class="stat-num count-up" data-target="15">0</div><div class="stat-label">Years of Trust</div></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">FERRARI<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">LAMBORGHINI<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">PORSCHE<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">BUGATTI<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">MCLAREN<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">ASTON MARTIN<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">ROLLS-ROYCE<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">BENTLEY<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">MERCEDES-AMG<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">BMW M<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">FERRARI<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">LAMBORGHINI<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">PORSCHE<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">BUGATTI<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">MCLAREN<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">ASTON MARTIN<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">ROLLS-ROYCE<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">BENTLEY<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">MERCEDES-AMG<span class="marquee-dot">●</span></span>
+    <span class="marquee-item">BMW M<span class="marquee-dot">●</span></span>
+  </div>
+</div>
+
+<!-- SPOTLIGHT -->
+<section id="spotlight">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Featured This Week</span>
+    <h2 class="section-title">CAR OF THE <span>MONTH</span></h2>
+  </div>
+  <div class="spotlight-inner">
+    <div class="spotlight-img-wrap reveal">
+      <img class="spotlight-img" src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=85&auto=format&fit=crop" alt="Ferrari 488 Spider">
+      <div class="spotlight-glow"></div>
+    </div>
+    <div class="spotlight-info reveal">
+      <div class="spotlight-brand">Ferrari ✦ 2024</div>
+      <h2 class="spotlight-model">SF90<br><em>STRADALE</em></h2>
+      <p class="spotlight-tagline">The most powerful road car ever built by Ferrari. A hybrid V8 masterpiece that redefines what a car can be — 986 horsepower of pure Italian fury.</p>
+      <div class="spotlight-stats">
+        <div class="sp-stat">
+          <div class="sp-num">2.5<span>s</span></div>
+          <div class="sp-lbl">0–60 mph</div>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-num">211<span>mph</span></div>
+          <div class="sp-lbl">Top Speed</div>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-num">986<span>hp</span></div>
+          <div class="sp-lbl">Power</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <button class="btn-primary" style="font-size:.7rem;" onclick="openModal(0)">Configure Yours</button>
+        <button class="btn-outline" style="font-size:.7rem;" onclick="openVirtualTour()">Virtual Tour ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AWARD STRIP -->
+<div class="award-strip">
+  <div class="award"><span class="award-icon">🏆</span>Best Supercar Dealer 2024</div>
+  <div class="award"><span class="award-icon">⭐</span>5-Star Certified</div>
+  <div class="award"><span class="award-icon">🛡️</span>Authorized Dealer Network</div>
+  <div class="award"><span class="award-icon">🔑</span>Concierge Delivery Worldwide</div>
+  <div class="award"><span class="award-icon">💎</span>Luxury Automotive Guild Member</div>
+</div>
+
+<!-- CARS -->
+<section id="cars">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Our Collection</span>
+    <h2 class="section-title">ICONIC <span>MACHINES</span></h2>
+    <p class="section-sub">20 legendary automobiles, hand-selected for the discerning enthusiast</p>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterCars('all',this)">All</button>
+    <button class="filter-btn" onclick="filterCars('supercar',this)">Supercar</button>
+    <button class="filter-btn" onclick="filterCars('luxury',this)">Luxury</button>
+    <button class="filter-btn" onclick="filterCars('sports',this)">Sports</button>
+    <button class="filter-btn" onclick="filterCars('electric',this)">Electric</button>
+    <button class="filter-btn" onclick="filterCars('suv',this)">SUV</button>
+  </div>
+  <div class="cars-grid" id="carsGrid"></div>
+</section>
+
+<!-- BRANDS -->
+<section id="brands">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Our Partners</span>
+    <h2 class="section-title">WORLD-CLASS <span>BRANDS</span></h2>
+  </div>
+  <div class="brands-grid">
+    <div class="brand-pill" onclick="filterByBrand('Ferrari',this)">Ferrari</div>
+    <div class="brand-pill" onclick="filterByBrand('Lamborghini',this)">Lamborghini</div>
+    <div class="brand-pill" onclick="filterByBrand('Porsche',this)">Porsche</div>
+    <div class="brand-pill" onclick="filterByBrand('Bugatti',this)">Bugatti</div>
+    <div class="brand-pill" onclick="filterByBrand('McLaren',this)">McLaren</div>
+    <div class="brand-pill" onclick="filterByBrand('Aston Martin',this)">Aston Martin</div>
+    <div class="brand-pill" onclick="filterByBrand('Rolls-Royce',this)">Rolls-Royce</div>
+    <div class="brand-pill" onclick="filterByBrand('Bentley',this)">Bentley</div>
+    <div class="brand-pill" onclick="filterByBrand('Mercedes-AMG',this)">Mercedes-AMG</div>
+    <div class="brand-pill" onclick="filterByBrand('BMW',this)">BMW M</div>
+    <div class="brand-pill" onclick="filterByBrand('Koenigsegg',this)">Koenigsegg</div>
+    <div class="brand-pill" onclick="filterByBrand('Pagani',this)">Pagani</div>
+    <div class="brand-pill" onclick="filterByBrand('Maserati',this)">Maserati</div>
+    <div class="brand-pill" onclick="filterByBrand('Alfa Romeo',this)">Alfa Romeo</div>
+    <div class="brand-pill" onclick="filterByBrand('Tesla',this)">Tesla</div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Why Choose Us</span>
+    <h2 class="section-title">THE VELOCE <span>ADVANTAGE</span></h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">🏎️</div>
+      <div class="feature-title">Curated Excellence</div>
+      <p class="feature-desc">Every vehicle is personally inspected and authenticated by our team of master technicians with 20+ years of expertise in exotic automobiles.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🔐</div>
+      <div class="feature-title">Verified Provenance</div>
+      <p class="feature-desc">Full service history, CarFax reports, and factory authentication certificates provided with every vehicle. Zero compromises on transparency.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🌍</div>
+      <div class="feature-title">Global Delivery</div>
+      <p class="feature-desc">White-glove enclosed transport to your door, anywhere in the world. Full insurance coverage and real-time GPS tracking throughout delivery.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">💳</div>
+      <div class="feature-title">Elite Financing</div>
+      <p class="feature-desc">Bespoke financing solutions with competitive rates. Same-day approvals, flexible terms up to 96 months, and zero early repayment penalties.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🛠️</div>
+      <div class="feature-title">Factory Service</div>
+      <p class="feature-desc">Direct access to factory-trained technicians and genuine OEM parts. Preferred service scheduling with no waiting lists for our valued customers.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">Trade-In Advantage</div>
+      <p class="feature-desc">Above-market trade-in valuations on your current vehicle. Our expert appraisers ensure you receive maximum value, guaranteed in writing.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">Digital Showroom</div>
+      <p class="feature-desc">Immersive 360° virtual tours, augmented reality previews, and live video walkthroughs with our specialists from anywhere in the world.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">EV Expertise</div>
+      <p class="feature-desc">Dedicated electric vehicle specialists to guide you through the future of performance driving, including home charging infrastructure support.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Side by Side</span>
+    <h2 class="section-title">PERFORMANCE <span>COMPARISON</span></h2>
+  </div>
+  <div class="compare-table-wrap reveal">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>0–60 mph</th>
+          <th>Top Speed</th>
+          <th>Power</th>
+          <th>Price</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody id="compareBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Client Experiences</span>
+    <h2 class="section-title">WHAT THEY <span>SAY</span></h2>
+  </div>
+  <div class="reviews-track" id="reviewsTrack"></div>
+</section>
+
+<!-- CTA -->
+<section id="cta-band">
+  <div class="cta-band-title">READY TO OWN YOUR<br><span style="color:var(--red)">DREAM?</span></div>
+  <p class="cta-band-sub">Join 12,000+ satisfied clients. Get exclusive access to our off-market inventory.</p>
+  <div class="cta-form">
+    <input type="email" class="cta-input" placeholder="Your email address">
+    <button class="btn-primary" style="padding:1rem 2rem;white-space:nowrap;" onclick="this.textContent='✓ Joined!';this.style.background='#00aa55'">Get Access</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">VELOC<span>E</span> MOTORS</div>
+      <p class="footer-about">The world's most trusted destination for ultra-premium automobiles. Connecting extraordinary vehicles with extraordinary people since 2009.</p>
+      <div class="footer-socials">
+        <a href="https://x.com" target="_blank" rel="noopener" class="social-btn" title="Follow on X">𝕏</a>
+        <a href="https://linkedin.com" target="_blank" rel="noopener" class="social-btn" title="LinkedIn">in</a>
+        <a href="https://instagram.com" target="_blank" rel="noopener" class="social-btn" title="Instagram">IG</a>
+        <a href="https://youtube.com" target="_blank" rel="noopener" class="social-btn" title="YouTube">YT</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Inventory</h4>
+      <ul>
+        <li><a href="#cars" onclick="setTimeout(()=>filterByFooter('supercar'),400)">Supercars</a></li>
+        <li><a href="#cars" onclick="setTimeout(()=>filterByFooter('luxury'),400)">Luxury Sedans</a></li>
+        <li><a href="#cars" onclick="setTimeout(()=>filterByFooter('sports'),400)">Sports Cars</a></li>
+        <li><a href="#cars" onclick="setTimeout(()=>filterByFooter('electric'),400)">Electric Vehicles</a></li>
+        <li><a href="#cars" onclick="setTimeout(()=>filterByFooter('all'),400)">Classic Cars</a></li>
+        <li><a href="#cars" onclick="setTimeout(()=>filterByFooter('suv'),400)">Off-Road Luxury</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#cta-band" onclick="showToast('💳 Financing options available — speak to our team!')">Financing</a></li>
+        <li><a href="#cta-band" onclick="showToast('🔄 Get a trade-in quote today!')">Trade-In</a></li>
+        <li><a href="#cta-band" onclick="showToast('🛡️ Comprehensive insurance packages available')">Insurance</a></li>
+        <li><a href="#cta-band" onclick="showToast('🚚 White-glove delivery worldwide!')">Delivery</a></li>
+        <li><a href="#cta-band" onclick="showToast('🛠️ Book a factory-certified service appointment')">Servicing</a></li>
+        <li><a href="#cta-band" onclick="showToast('✨ Bespoke customization — make it uniquely yours')">Customization</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="tel:+18008352263">📞 +1 (800) 835-2263</a></li>
+        <li><a href="mailto:info@veloce.com">✉️ info@veloce.com</a></li>
+        <li><a href="https://maps.google.com/?q=Beverly+Hills,CA" target="_blank" rel="noopener">📍 Beverly Hills, CA</a></li>
+        <li><a href="#" onclick="showToast('🕐 Mon–Sat 9AM–7PM PST')">🕐 Mon–Sat 9AM–7PM</a></li>
+        <li><a href="#cta-band" onclick="showToast('💬 Live chat is available 24/7!')">Live Chat 24/7</a></li>
+        <li><a href="#cta-band" onclick="showToast('🏛️ Book a private showroom tour today!')">Showroom Tours</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2024 Veloce Motors. All rights reserved. Built for the extraordinary.</div>
+    <div style="display:flex;gap:2rem;">
+      <a href="#" onclick="showToast('🔒 Privacy Policy — we never sell your data')" style="color:var(--muted);font-size:.85rem;text-decoration:none;">Privacy Policy</a>
+      <a href="#" onclick="showToast('📄 Terms of Service — fair & transparent')" style="color:var(--muted);font-size:.85rem;text-decoration:none;">Terms of Service</a>
+      <a href="#" onclick="showToast('🍪 Cookie preferences saved!')" style="color:var(--muted);font-size:.85rem;text-decoration:none;">Cookie Settings</a>
+    </div>
+  </div>
+</footer>
+
+<!-- SCROLL TOP -->
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <img id="modalImg" class="modal-img" src="" alt="">
+    <div id="modalBrand" style="font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:.3rem;"></div>
+    <div id="modalTitle" class="modal-title"></div>
+    <div id="modalPrice" class="modal-price"></div>
+    <div id="modalSpecs" class="modal-specs-grid"></div>
+    <p id="modalDesc" class="modal-desc"></p>
+    <!-- RESERVATION FORM -->
+    <div id="reserveForm" style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:var(--white);letter-spacing:.1em;margin-bottom:1rem;">RESERVE THIS CAR</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem;">
+        <input id="rName" type="text" placeholder="Your Full Name" class="cta-input" style="font-size:.9rem;padding:.7rem 1rem;">
+        <input id="rPhone" type="tel" placeholder="Phone Number" class="cta-input" style="font-size:.9rem;padding:.7rem 1rem;">
+      </div>
+      <input id="rEmail" type="email" placeholder="Email Address" class="cta-input" style="width:100%;font-size:.9rem;padding:.7rem 1rem;margin-bottom:.8rem;">
+      <select id="rIntent" class="cta-input" style="width:100%;font-size:.9rem;padding:.7rem 1rem;margin-bottom:.8rem;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22%237a7a9a%22 viewBox=%220 0 24 24%22><path d=%22M7 10l5 5 5-5%22/></svg>');background-repeat:no-repeat;background-position:right 1rem center;background-size:1.2rem;">
+        <option value="" disabled selected>Select Intent</option>
+        <option>🔑 Purchase Immediately</option>
+        <option>📅 Schedule Test Drive</option>
+        <option>💬 Request More Info</option>
+        <option>💳 Explore Financing</option>
+        <option>🔄 Trade-In Enquiry</option>
+      </select>
+      <textarea id="rNote" placeholder="Any special requirements or questions..." class="cta-input" rows="3" style="width:100%;resize:none;font-size:.9rem;padding:.7rem 1rem;margin-bottom:1rem;font-family:'Rajdhani',sans-serif;"></textarea>
+      <button class="btn-primary" style="width:100%;padding:1rem;" id="reserveBtn" onclick="submitReservation()">SUBMIT RESERVATION →</button>
+    </div>
+    <div id="reserveSuccess" style="display:none;margin-top:1.5rem;text-align:center;padding:2rem;border:1px solid rgba(0,200,100,.3);border-radius:4px;background:rgba(0,200,100,.06);">
+      <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:#00cc66;margin-bottom:.5rem;">RESERVATION CONFIRMED</div>
+      <div style="color:var(--muted);font-size:.95rem;">Our specialist will contact you within 2 hours. Reference: <span id="reserveRef" style="color:var(--gold);font-family:'Orbitron',sans-serif;"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIRTUAL TOUR MODAL -->
+<div class="modal-overlay" id="vtModal">
+  <div class="modal" style="max-width:600px;text-align:center;">
+    <button class="modal-close" onclick="closeVirtualTour()">✕</button>
+    <div style="font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:.5rem;">Ferrari SF90 Stradale</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:900;color:var(--white);margin-bottom:1.5rem;">360° VIRTUAL TOUR</div>
+    <div style="background:linear-gradient(135deg,#0d0d14,#111118);border:1px solid var(--border);border-radius:8px;height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;position:relative;overflow:hidden;">
+      <div style="font-size:4rem;animation:float 3s ease-in-out infinite;">🏎️</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--muted);letter-spacing:.2em;">DRAG TO ROTATE</div>
+      <div id="vtDeg" style="font-family:'Orbitron',sans-serif;font-size:.7rem;color:var(--red);letter-spacing:.2em;">0°</div>
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(232,0,13,.06),transparent 70%);pointer-events:none;"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:1.2rem;">
+      <button onclick="setVTView('FRONT')" style="background:var(--glass);border:1px solid var(--border);color:var(--muted);padding:.6rem;border-radius:3px;font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">FRONT</button>
+      <button onclick="setVTView('REAR')" style="background:var(--glass);border:1px solid var(--border);color:var(--muted);padding:.6rem;border-radius:3px;font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">REAR</button>
+      <button onclick="setVTView('SIDE')" style="background:var(--glass);border:1px solid var(--border);color:var(--muted);padding:.6rem;border-radius:3px;font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">SIDE</button>
+      <button onclick="setVTView('INTERIOR')" style="background:var(--glass);border:1px solid var(--border);color:var(--muted);padding:.6rem;border-radius:3px;font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">INTERIOR</button>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:1.2rem;padding:.9rem;" onclick="closeVirtualTour();openModal(0)">RESERVE THIS CAR →</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark3);border:1px solid rgba(232,0,13,.3);color:var(--white);padding:.9rem 2rem;border-radius:3px;font-family:'Rajdhani',sans-serif;font-size:1rem;z-index:99998;opacity:0;transition:all .4s cubic-bezier(.23,1,.32,1);pointer-events:none;white-space:nowrap;box-shadow:0 10px 40px rgba(0,0,0,.5);"></div>
+
+<script>
+// ──────────────────────────────
+// DATA
+// ──────────────────────────────
+const cars = [
+  {
+    brand:'Ferrari', model:'SF90 Stradale', year:'2024', category:'supercar',
+    price:'$625,000', hp:'986', torque:'590lb-ft', speed:'0–60: 2.5s', topSpeed:'211mph',
+    rating:5, reviews:142, badge:'NEW',
+    desc:'The most powerful production Ferrari ever. A breathtaking plug-in hybrid hypercar combining a twin-turbo V8 with three electric motors for 986hp of pure Italian engineering.',
+    img:'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=700&q=80&auto=format&fit=crop',
+    score:99
+  },
+  {
+    brand:'Lamborghini', model:'Revuelto', year:'2024', category:'supercar',
+    price:'$517,000', hp:'1001', torque:'535lb-ft', speed:'0–60: 2.5s', topSpeed:'217mph',
+    rating:5, reviews:98, badge:'HOT',
+    desc:'Successor to the legendary Aventador. A naturally-aspirated V12 hybrid with over 1000hp, featuring an all-new carbon fiber chassis and stunning futuristic design.',
+    img:'https://images.unsplash.com/photo-1621135802920-133df287f89c?w=700&q=80&auto=format&fit=crop',
+    score:97
+  },
+  {
+    brand:'Porsche', model:'911 GT3 RS', year:'2024', category:'sports',
+    price:'$225,250', hp:'518', torque:'343lb-ft', speed:'0–60: 3.0s', topSpeed:'184mph',
+    rating:5, reviews:214, badge:'TRACK',
+    desc:'The definitive Porsche. A naturally-aspirated flat-six screamer built for the circuit, with active aerodynamics that generate an astonishing 1,900 lbs of downforce.',
+    img:'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=700&q=80&auto=format&fit=crop',
+    score:95
+  },
+  {
+    brand:'Bugatti', model:'Chiron Super Sport', year:'2023', category:'supercar',
+    price:'$3,900,000', hp:'1,578', torque:'1,180lb-ft', speed:'0–60: 2.3s', topSpeed:'273mph',
+    rating:5, reviews:12, badge:'ULTRA',
+    desc:'The pinnacle of automotive engineering. Powered by a quad-turbocharged 8.0L W16 engine producing 1,578 horsepower. One of only 500 ever built.',
+    img:'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=700&q=80&auto=format&fit=crop',
+    score:100
+  },
+  {
+    brand:'Rolls-Royce', model:'Phantom Series II', year:'2024', category:'luxury',
+    price:'$460,000', hp:'563', torque:'664lb-ft', speed:'0–60: 5.1s', topSpeed:'155mph',
+    rating:5, reviews:44, badge:'BESPOKE',
+    desc:'The pinnacle of luxury motoring. Every Phantom is individually commissioned, featuring the famous Starlight Headliner and unmatched craftsmanship with months of hand-finishing.',
+    img:'https://images.unsplash.com/photo-1563720223185-11003d516935?w=700&q=80&auto=format&fit=crop',
+    score:93
+  },
+  {
+    brand:'Bentley', model:'Continental GT Speed', year:'2024', category:'luxury',
+    price:'$274,900', hp:'659', torque:'664lb-ft', speed:'0–60: 3.5s', topSpeed:'208mph',
+    rating:5, reviews:88, badge:'GT',
+    desc:'The most dynamic Bentley ever created. Combining a 6.0L W12 engine with a revolutionary Dynamic Ride system for an unprecedented blend of opulence and performance.',
+    img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=700&q=80&auto=format&fit=crop',
+    score:92
+  },
+  {
+    brand:'Aston Martin', model:'DBS 770 Ultimate', year:'2023', category:'sports',
+    price:'$316,000', hp:'770', torque:'664lb-ft', speed:'0–60: 3.4s', topSpeed:'211mph',
+    rating:5, reviews:34, badge:'FINAL',
+    desc:'The last and greatest V12 grand tourer from Aston Martin. 770 horsepower of hand-assembled British muscle wrapped in coachwork of incomparable elegance.',
+    img:'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=700&q=80&auto=format&fit=crop',
+    score:94
+  },
+  {
+    brand:'Mercedes-AMG', model:'ONE', year:'2023', category:'supercar',
+    price:'$2,700,000', hp:'1,063', torque:'628lb-ft', speed:'0–60: 2.9s', topSpeed:'219mph',
+    rating:5, reviews:8, badge:'F1',
+    desc:'A Formula 1 car for the road. The Mercedes-AMG ONE uses a hybrid powertrain directly derived from the 2016 F1 World Championship season.',
+    img:'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=700&q=80&auto=format&fit=crop',
+    score:98
+  },
+  {
+    brand:'Tesla', model:'Roadster 2024', year:'2024', category:'electric',
+    price:'$250,000', hp:'~1,000', torque:'10,000Nm', speed:'0–60: 1.9s', topSpeed:'250mph+',
+    rating:5, reviews:156, badge:'EV',
+    desc:'The fastest production car ever made. Quad-motor architecture, SpaceX cold gas thruster package option, and 620-mile range redefine what electric performance means.',
+    img:'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=700&q=80&auto=format&fit=crop',
+    score:98
+  },
+    {
+    brand:'Pagani', model:'Huayra R Evo', year:'2024', category:'supercar',
+    price:'$3,200,000', hp:'900', torque:'730Nm', speed:'0–60: 2.8s', topSpeed:'220mph',
+    rating:5, reviews:6, badge:'RARE',
+    desc:'Art in motion. The Pagani Huayra R Evo features a naturally-aspirated AMG V12 producing 900hp, hand-built bodywork from aircraft-grade titanium and carbon fiber.',
+    img:'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=700&q=80&auto=format&fit=crop',
+    score:100
+  },
+  {
+    brand:'Porsche', model:'Taycan Turbo GT', year:'2024', category:'electric',
+    price:'$230,000', hp:'1,092', torque:'1,340Nm', speed:'0–60: 2.1s', topSpeed:'190mph',
+    rating:5, reviews:91, badge:'EV',
+    desc:'The world\'s fastest accelerating production Porsche, period. 1,092 horsepower from dual electric motors with a special Weissach lightweight package.',
+    img:'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=700&q=80&auto=format&fit=crop',
+    score:95
+  },
+  {
+    brand:'Maserati', model:'MC20 Cielo', year:'2024', category:'sports',
+    price:'$282,000', hp:'621', torque:'538Nm', speed:'0–60: 2.9s', topSpeed:'202mph',
+    rating:4, reviews:47, badge:'SPIDER',
+    desc:'Maserati\'s triumphant return to motorsport translated to the road. The Nettuno V6 engine is entirely developed and built in-house — the first time in decades.',
+    img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=700&q=80&auto=format&fit=crop',
+    score:88
+  },
+  {
+    brand:'Lamborghini', model:'Urus Performante', year:'2024', category:'suv',
+    price:'$260,000', hp:'666', torque:'627lb-ft', speed:'0–60: 3.3s', topSpeed:'190mph',
+    rating:5, reviews:134, badge:'SUPER-SUV',
+    desc:'The world\'s first Super Sport Utility Vehicle. 666hp, active torque vectoring and a configurable driving experience ranging from school run to Nürburgring attack.',
+    img:'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=700&q=80&auto=format&fit=crop',
+    score:90
+  },
+  {
+    brand:'Koenigsegg', model:'CC850', year:'2023', category:'supercar',
+    price:'$3,700,000', hp:'1,385', torque:'1,000Nm', speed:'0–60: 2.4s', topSpeed:'250mph',
+    rating:5, reviews:5, badge:'LIMITED',
+    desc:'50 units. 1,385 horsepower. Manual or automatic with the revolutionary Engage Shift System. Koenigsegg\'s tribute to 50 years of the company\'s founding year.',
+    img:'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=700&q=80&auto=format&fit=crop',
+    score:100
+  },
+  {
+    brand:'Ferrari', model:'Roma Spider', year:'2024', category:'sports',
+    price:'$240,000', hp:'612', torque:'561Nm', speed:'0–60: 3.4s', topSpeed:'198mph',
+    rating:5, reviews:62, badge:'SPIDER',
+    desc:'La Dolce Vita on four wheels. The Roma Spider blends open-top Italian beauty with a twin-turbocharged V8 heart — the most beautiful Ferrari of a generation.',
+    img:'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=700&q=80&auto=format&fit=crop',
+    score:93
+  },
+  {
+    brand:'Rolls-Royce', model:'Cullinan Black Badge', year:'2024', category:'suv',
+    price:'$380,000', hp:'592', torque:'627lb-ft', speed:'0–60: 5.0s', topSpeed:'155mph',
+    rating:5, reviews:38, badge:'BLACK BADGE',
+    desc:'The alter ego of the Cullinan. Dark, powerful and rebellious — for clients who want to defy expectations. Every specification has been optimised for those who choose to stand apart.',
+    img:'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?w=700&q=80&auto=format&fit=crop',
+    score:92
+  },
+];
+
+const reviews = [
+  { name:'James R.', car:'Ferrari SF90 Stradale', text:'Words cannot describe the experience of taking delivery of my SF90. The Veloce team made the entire process seamless — from selection to white-glove delivery at my doorstep.', init:'JR', stars:5 },
+  { name:'Sarah M.', car:'Porsche 911 GT3 RS', text:'After searching for months, Veloce found me the exact spec I wanted. Their attention to detail and market knowledge is unmatched. I\'ve bought four cars through them now.', init:'SM', stars:5 },
+  { name:'Ahmed K.', car:'Rolls-Royce Phantom', text:'The bespoke configuration service was extraordinary. Six months of collaboration produced the most personal and beautiful object I\'ve ever owned. Worth every penny.', init:'AK', stars:5 },
+  { name:'Elena V.', car:'Tesla Roadster', text:'Being an early deposit holder, Veloce kept me informed every step of the way. Their EV expertise and post-delivery support have been exceptional throughout.', init:'EV', stars:5 },
+  { name:'Michael T.', car:'McLaren 765LT Spider', text:'Third supercar I\'ve purchased here and they just keep getting better. The trade-in value they offered for my 720S was 15% above market. Truly unbeatable.', init:'MT', stars:5 },
+  { name:'Lisa C.', car:'Bentley Continental GT', text:'I was nervous buying my first luxury car remotely. Veloce sent a specialist to personally present the car over video, answered 200 questions, and delivered it with a bow.', init:'LC', stars:5 },
+];
+
+const compareData = [
+  { name:'Bugatti Chiron SS', time:'2.3s', speed:'273mph', power:'1,578hp', price:'$3.9M', score:100 },
+  { name:'Koenigsegg CC850', time:'2.4s', speed:'250mph', power:'1,385hp', price:'$3.7M', score:99 },
+  { name:'Ferrari SF90', time:'2.5s', speed:'211mph', power:'986hp', price:'$625K', score:99 },
+  { name:'Mercedes-AMG ONE', time:'2.9s', speed:'219mph', power:'1,063hp', price:'$2.7M', score:98 },
+  { name:'McLaren 765LT', time:'2.7s', speed:'205mph', power:'755hp', price:'$383K', score:96 },
+  { name:'Porsche Taycan TGT', time:'2.1s', speed:'190mph', power:'1,092hp', price:'$230K', score:95 },
+  { name:'Lamborghini Revuelto', time:'2.5s', speed:'217mph', power:'1001hp', price:'$517K', score:97 },
+];
+
+// ──────────────────────────────
+// LOADER
+// ──────────────────────────────
+let pct = 0;
+const loaderPct = document.getElementById('loaderPct');
+const loaderInterval = setInterval(() => {
+  pct += Math.random() * 8 + 2;
+  if (pct >= 100) { pct = 100; clearInterval(loaderInterval); }
+  loaderPct.textContent = Math.floor(pct) + '%';
+  if (pct >= 100) setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+    startAnimations();
+  }, 400);
+}, 80);
+
+// ──────────────────────────────
+// PARTICLES
+// ──────────────────────────────
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let pts = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+for (let i = 0; i < 120; i++) pts.push({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  vx: (Math.random() - .5) * .4,
+  vy: (Math.random() - .5) * .4,
+  r: Math.random() * 1.5 + .3,
+  o: Math.random() * .4 + .1
+});
+function animParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  pts.forEach((p, i) => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(232,0,13,${p.o})`;
+    ctx.fill();
+    pts.slice(i+1).forEach(p2 => {
+      const dx = p.x - p2.x, dy = p.y - p2.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 120) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = `rgba(232,0,13,${(.08*(1-d/120))})`;
+        ctx.lineWidth = .4; ctx.stroke();
+      }
+    });
+  });
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ──────────────────────────────
+// CURSOR
+// ──────────────────────────────
+const dot = document.getElementById('cursorDot');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+// Hide default OS cursor on the page
+document.documentElement.style.cursor = 'none';
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  // Snap dot directly to mouse
+  dot.style.left = mx + 'px';
+  dot.style.top  = my + 'px';
+});
+
+// Ring lazily follows mouse
+function animCursor() {
+  rx += (mx - rx) * .12;
+  ry += (my - ry) * .12;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+
+// Hover grow — use width/height so transform:translate(-50%,-50%) is untouched
+function attachCursorHover(root) {
+  root.querySelectorAll('a, button, .car-card, .brand-pill, .filter-btn, input, select, textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width  = '56px';
+      ring.style.height = '56px';
+      ring.style.borderColor = 'rgba(232,0,13,.9)';
+      ring.style.background = 'rgba(232,0,13,.06)';
+      // Restore default cursor on interactive elements so they stay clickable
+      el.style.cursor = 'pointer';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width  = '36px';
+      ring.style.height = '36px';
+      ring.style.borderColor = 'rgba(232,0,13,.5)';
+      ring.style.background = 'transparent';
+    });
+  });
+}
+attachCursorHover(document);
+
+// Click burst
+document.addEventListener('mousedown', () => {
+  dot.style.transform = 'translate(-50%,-50%) scale(1.8)';
+  ring.style.width  = '20px';
+  ring.style.height = '20px';
+});
+document.addEventListener('mouseup', () => {
+  dot.style.transform = 'translate(-50%,-50%) scale(1)';
+  ring.style.width  = '36px';
+  ring.style.height = '36px';
+});
+
+// Hide when mouse leaves window
+document.addEventListener('mouseleave', () => { dot.style.opacity='0'; ring.style.opacity='0'; });
+document.addEventListener('mouseenter', () => { dot.style.opacity='1'; ring.style.opacity='1'; });
+
+// ──────────────────────────────
+// NAV SCROLL
+// ──────────────────────────────
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  document.getElementById('navbar').classList.toggle('scrolled', scrolled > 50);
+  const progress = (scrolled / (document.body.scrollHeight - window.innerHeight)) * 100;
+  document.getElementById('progress').style.width = progress + '%';
+  document.getElementById('scrollTop').classList.toggle('visible', scrolled > 300);
+  revealElements();
+  if (scrolled < 500) countUp();
+});
+
+// ──────────────────────────────
+// SCROLL REVEAL
+// ──────────────────────────────
+function revealElements() {
+  document.querySelectorAll('.reveal').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight - 80) el.classList.add('visible');
+  });
+}
+
+// ──────────────────────────────
+// COUNT UP
+// ──────────────────────────────
+let counted = false;
+function countUp() {
+  if (counted) return;
+  const els = document.querySelectorAll('.count-up');
+  if (!els.length) return;
+  const rect = els[0].getBoundingClientRect();
+  if (rect.top > window.innerHeight) return;
+  counted = true;
+  els.forEach(el => {
+    const target = parseInt(el.dataset.target);
+    let current = 0;
+    const step = target / 60;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current).toLocaleString();
+    }, 20);
+  });
+}
+
+// ──────────────────────────────
+// LIVE COUNT TICKER
+// ──────────────────────────────
+setInterval(() => {
+  const el = document.getElementById('liveCount');
+  if (el) {
+    let n = parseInt(el.textContent);
+    n += Math.random() > .5 ? 1 : -1;
+    n = Math.max(240, Math.min(255, n));
+    el.textContent = n;
+  }
+}, 3000);
+
+// ──────────────────────────────
+// RENDER CARS
+// ──────────────────────────────
+function renderCars(data) {
+  const grid = document.getElementById('carsGrid');
+  grid.innerHTML = '';
+  data.forEach((car, i) => {
+    const stars = Array.from({length:5}, (_,s) => `<span class="star ${s<car.rating?'':'empty'}">★</span>`).join('');
+    const delay = (i % 6) * 0.08;
+    grid.innerHTML += `
+      <div class="car-card reveal" data-cat="${car.category}" style="animation-delay:${delay}s" onclick="openModal(${i})">
+        <div class="car-img-wrap">
+          <img src="${car.img}" alt="${car.brand} ${car.model}" loading="lazy">
+          <div class="car-overlay"></div>
+          <div class="car-brand-logo">${car.brand}</div>
+          ${car.badge ? `<div class="car-badge">${car.badge}</div>` : ''}
+        </div>
+        <div class="car-body">
+          <div class="car-model">${car.model}</div>
+          <div class="car-year-cat">
+            <span class="car-year">${car.year}</span>
+            <span class="car-cat">• ${car.category.toUpperCase()}</span>
+          </div>
+          <div class="car-specs">
+            <div class="spec"><div class="spec-val">${car.hp}<span>hp</span></div><div class="spec-label">Power</div></div>
+            <div class="spec"><div class="spec-val">${car.speed.replace('0–60: ','')}</div><div class="spec-label">0–60</div></div>
+            <div class="spec"><div class="spec-val">${car.topSpeed}</div><div class="spec-label">Top Speed</div></div>
+          </div>
+          <div class="car-rating">${stars}<span class="rating-count">(${car.reviews})</span></div>
+          <div class="car-price-row">
+            <div class="car-price"><sub>FROM</sub>${car.price}</div>
+            <button class="car-btn" onclick="event.stopPropagation();openModal(${i})">DETAILS →</button>
+          </div>
+        </div>
+      </div>`;
+  });
+  setTimeout(revealElements, 50);
+}
+renderCars(cars);
+
+// ──────────────────────────────
+// FILTER
+// ──────────────────────────────
+function filterCars(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = cat === 'all' ? cars : cars.filter(c => c.category === cat);
+  renderCars(filtered);
+}
+
+// ──────────────────────────────
+// RENDER REVIEWS
+// ──────────────────────────────
+const track = document.getElementById('reviewsTrack');
+reviews.forEach(r => {
+  const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+  track.innerHTML += `
+    <div class="review-card">
+      <div class="review-stars">${stars}</div>
+      <p class="review-text">"${r.text}"</p>
+      <div class="review-author">
+        <div class="review-avatar">${r.init}</div>
+        <div>
+          <div class="review-name">${r.name}</div>
+          <div class="review-car">${r.car}</div>
+        </div>
+      </div>
+    </div>`;
+});
+
+// ──────────────────────────────
+// RENDER COMPARE TABLE
+// ──────────────────────────────
+const tbody = document.getElementById('compareBody');
+compareData.forEach(row => {
+  const pct = row.score;
+  tbody.innerHTML += `
+    <tr>
+      <td class="car-name">${row.name}</td>
+      <td class="highlight">${row.time}</td>
+      <td>${row.speed}</td>
+      <td>${row.power}</td>
+      <td class="highlight">${row.price}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:.8rem;">
+          <div class="perf-bar"><div class="perf-fill" style="width:${pct}%"></div></div>
+          <span style="font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--gold);font-weight:700;">${pct}</span>
+        </div>
+      </td>
+    </tr>`;
+});
+
+// ──────────────────────────────
+// MODAL
+// ──────────────────────────────
+function openModal(i) {
+  const car = cars[i];
+  document.getElementById('modalImg').src = car.img;
+  document.getElementById('modalImg').alt = `${car.brand} ${car.model}`;
+  document.getElementById('modalBrand').textContent = `${car.brand} · ${car.year} · ${car.category.toUpperCase()}`;
+  document.getElementById('modalTitle').textContent = car.model;
+  document.getElementById('modalPrice').textContent = car.price;
+  document.getElementById('modalSpecs').innerHTML = `
+    <div class="modal-spec"><div class="modal-spec-val">${car.hp}</div><div class="modal-spec-lbl">Horsepower</div></div>
+    <div class="modal-spec"><div class="modal-spec-val">${car.speed.replace('0–60: ','')}</div><div class="modal-spec-lbl">0–60 mph</div></div>
+    <div class="modal-spec"><div class="modal-spec-val">${car.topSpeed}</div><div class="modal-spec-lbl">Top Speed</div></div>
+    <div class="modal-spec"><div class="modal-spec-val">${car.score}/100</div><div class="modal-spec-lbl">Veloce Score</div></div>`;
+  document.getElementById('modalDesc').textContent = car.desc;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+  // Reset form for next open
+  setTimeout(() => {
+    document.getElementById('reserveForm').style.display = 'block';
+    document.getElementById('reserveSuccess').style.display = 'none';
+    const btn = document.getElementById('reserveBtn');
+    btn.textContent = 'SUBMIT RESERVATION →';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+    ['rName','rPhone','rEmail','rNote'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('rIntent').selectedIndex = 0;
+  }, 400);
+}
+document.getElementById('modal').addEventListener('click', e => { if(e.target === document.getElementById('modal')) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+// ──────────────────────────────
+// TOAST
+// ──────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 3200);
+}
+
+// ──────────────────────────────
+// RESERVATION
+// ──────────────────────────────
+function submitReservation() {
+  const name    = document.getElementById('rName').value.trim();
+  const email   = document.getElementById('rEmail').value.trim();
+  const phone   = document.getElementById('rPhone').value.trim();
+  const intent  = document.getElementById('rIntent').value;
+  if (!name)  { showToast('⚠️ Please enter your full name'); return; }
+  if (!email || !email.includes('@')) { showToast('⚠️ Please enter a valid email address'); return; }
+  if (!phone) { showToast('⚠️ Please enter your phone number'); return; }
+  if (!intent){ showToast('⚠️ Please select your intent'); return; }
+  const btn = document.getElementById('reserveBtn');
+  btn.textContent = 'PROCESSING...';
+  btn.style.opacity = '.6';
+  btn.disabled = true;
+  setTimeout(() => {
+    document.getElementById('reserveForm').style.display = 'none';
+    document.getElementById('reserveSuccess').style.display = 'block';
+    const ref = 'VLX-' + Math.random().toString(36).toUpperCase().slice(2,8);
+    document.getElementById('reserveRef').textContent = ref;
+    showToast('🎉 Reservation confirmed! Our team will call you shortly.');
+  }, 1800);
+}
+
+// ──────────────────────────────
+// BRAND FILTER (from brands section)
+// ──────────────────────────────
+function filterByBrand(brand, pill) {
+  // Highlight pill
+  document.querySelectorAll('.brand-pill').forEach(p => p.style.background = '');
+  pill.style.background = 'rgba(232,0,13,.15)';
+  pill.style.borderColor = 'var(--red)';
+  pill.style.color = 'var(--white)';
+  // Reset after 1.5s
+  setTimeout(() => {
+    pill.style.background = '';
+    pill.style.borderColor = '';
+    pill.style.color = '';
+  }, 1500);
+  // Filter cars
+  const filtered = cars.filter(c => c.brand.toLowerCase().includes(brand.toLowerCase()));
+  // Scroll to cars section
+  document.getElementById('cars').scrollIntoView({ behavior: 'smooth' });
+  // Apply filter with slight delay so scroll finishes first
+  setTimeout(() => {
+    if (filtered.length > 0) {
+      renderCars(filtered);
+      // Reset all filter buttons to inactive
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      showToast(`🏎️ Showing ${filtered.length} ${brand} model${filtered.length>1?'s':''}`);
+    } else {
+      // Brand not in current stock — show all and toast
+      renderCars(cars);
+      document.querySelector('.filter-btn').classList.add('active');
+      showToast(`ℹ️ ${brand} models available on request — contact us!`);
+    }
+  }, 600);
+}
+
+// ──────────────────────────────
+// FOOTER CATEGORY FILTER
+// ──────────────────────────────
+function filterByFooter(cat) {
+  const filtered = cat === 'all' ? cars : cars.filter(c => c.category === cat);
+  renderCars(filtered);
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.textContent.toLowerCase() === cat || (cat === 'all' && b.textContent.toLowerCase() === 'all')) {
+      b.classList.add('active');
+    }
+  });
+  showToast(`🔍 Filtered: ${cat === 'all' ? 'All Cars' : cat.charAt(0).toUpperCase() + cat.slice(1) + 's'}`);
+}
+
+// ──────────────────────────────
+// VIRTUAL TOUR
+// ──────────────────────────────
+let vtDegCurrent = 0;
+let vtDegTarget = 0;
+let vtDragging = false;
+let vtStartX = 0;
+function openVirtualTour() {
+  document.getElementById('vtModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeVirtualTour() {
+  document.getElementById('vtModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function setVTView(view) {
+  const views = { FRONT: 0, REAR: 180, SIDE: 90, INTERIOR: 45 };
+  vtDegTarget = views[view];
+  animVT();
+  showToast(`🔭 ${view} VIEW`);
+}
+function animVT() {
+  vtDegCurrent += (vtDegTarget - vtDegCurrent) * 0.1;
+  const el = document.getElementById('vtDeg');
+  if (el) el.textContent = Math.round(vtDegCurrent) + '°';
+  if (Math.abs(vtDegTarget - vtDegCurrent) > 0.5) requestAnimationFrame(animVT);
+}
+document.getElementById('vtModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('vtModal')) closeVirtualTour();
+});
+
+// ──────────────────────────────
+// CTA EMAIL VALIDATION
+// ──────────────────────────────
+(function() {
+  const btn = document.querySelector('#cta-band .btn-primary');
+  const input = document.querySelector('#cta-band .cta-input');
+  if (btn && input) {
+    btn.onclick = function() {
+      const val = input.value.trim();
+      if (!val || !val.includes('@')) {
+        showToast('⚠️ Please enter a valid email address');
+        input.style.borderColor = 'var(--red)';
+        input.focus();
+        setTimeout(() => input.style.borderColor = '', 2000);
+        return;
+      }
+      btn.textContent = '⏳ Processing...';
+      btn.style.background = 'var(--muted)';
+      setTimeout(() => {
+        btn.textContent = '✓ Access Granted!';
+        btn.style.background = '#00aa55';
+        input.value = '';
+        showToast('🎉 Welcome to the Veloce inner circle!');
+      }, 1200);
+    };
+  }
+})();
+
+// ──────────────────────────────
+// NAV BOOK TEST DRIVE → scroll + toast
+// ──────────────────────────────
+document.querySelector('.nav-cta').addEventListener('click', function() {
+  document.getElementById('cta-band').scrollIntoView({ behavior: 'smooth' });
+  showToast('📅 Fill in your email to book a test drive!');
+});
+
+// Re-attach cursor listeners after dynamic content
+function reattachCursorListeners() {
+  document.querySelectorAll('a,button,.car-card,.brand-pill,.filter-btn').forEach(el => {
+    el.removeEventListener('mouseenter', cursorEnter);
+    el.removeEventListener('mouseleave', cursorLeave);
+    el.addEventListener('mouseenter', cursorEnter);
+    el.addEventListener('mouseleave', cursorLeave);
+  });
+}
+function cursorEnter() { ring.style.transform='translate(-50%,-50%) scale(1.8)'; ring.style.borderColor='rgba(232,0,13,.8)'; }
+function cursorLeave() { ring.style.transform='translate(-50%,-50%) scale(1)'; ring.style.borderColor='rgba(232,0,13,.5)'; }
+const origRenderCars = renderCars;
+// Patch renderCars to reattach listeners after re-render
+const _origRender = renderCars;
+window.addEventListener('DOMContentLoaded', reattachCursorListeners);
+setTimeout(reattachCursorListeners, 3000);
+
+// ──────────────────────────────
+// START ANIMATIONS
+// ──────────────────────────────
+function startAnimations() {
+  revealElements();
+  countUp();
+}
+
+// Run once immediately too
+revealElements();
+</script>
+</body>
+</html>
